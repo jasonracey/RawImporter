@@ -59,7 +59,8 @@ final class FileUtilTests extends FunSuite with BeforeAndAfterAll {
   }
 
   val srcPath: String = "src.txt"
-  val dstPath: String = "dst/dst.txt" // put in a sub dir to test dir created also
+  val dstDir: String = "dst"
+  val dstPath: String = s"$dstDir/dst.txt" // put in a sub dir to test dir created also
 
   val parent: String = "parent"
   val child1: String = s"$parent/child1"
@@ -79,7 +80,7 @@ final class FileUtilTests extends FunSuite with BeforeAndAfterAll {
 
   private def createTempDirs(): Unit = {
     for {
-      path <- Set(parent, child1, child2, child3)
+      path <- Seq(parent, child1, child2, child3)
     } {
       val file: File = new File(path)
       file.mkdir()
@@ -88,7 +89,7 @@ final class FileUtilTests extends FunSuite with BeforeAndAfterAll {
 
   private def createTempFiles(): Unit = {
     for {
-      path <- Set(srcPath, xxx_a, xxx_b, xxx_c, yyy_a, zzz_a)
+      path <- Seq(srcPath, xxx_a, xxx_b, xxx_c, yyy_a, zzz_a)
     } {
       val writer: FileWriter = new FileWriter(path)
       try {
@@ -101,17 +102,8 @@ final class FileUtilTests extends FunSuite with BeforeAndAfterAll {
   }
 
   override def afterAll(): Unit = {
-    deleteTempDirs()
     deleteTempFiles()
-  }
-
-  def deleteTempDirs(): Unit = {
-    for {
-      path <- Set(child1, child2, child3, parent)
-    } {
-      val file: File = new File(path)
-      if (file.exists()) file.delete()
-    }
+    deleteTempDirs()
   }
 
   def deleteTempFiles(): Unit = {
@@ -120,6 +112,16 @@ final class FileUtilTests extends FunSuite with BeforeAndAfterAll {
     } {
       val f: File = new File(path)
       if (f.exists()) f.delete()
+    }
+  }
+
+  def deleteTempDirs(): Unit = {
+    for {
+      // children must be deleted before parent
+      path <- IndexedSeq(dstDir, child1, child2, child3, parent)
+    } {
+      val file: File = new File(path)
+      if (file.exists()) file.delete()
     }
   }
 }
