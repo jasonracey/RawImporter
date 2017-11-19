@@ -4,44 +4,51 @@ import java.io.File
 
 object RawImporter {
   def importRawFiles(parentDir: File): Unit = {
-    val childDirs: List[File] = FileUtil.getChildDirectories(parentDir)
+    val allRawFiles: Set[File] = getRawFileSet(parentDir)
 
-    val photoDirs: List[File] = childDirs.filter{ dir: File =>
+    allRawFiles.toArray.sortBy{ _.getName }.foreach{ src: File =>
+      val dst: File = new File(src.getPath.replace("/Volumes/photos-a", "/Users/jasonracey/Files"))
+      if (!dst.exists) {
+        FileUtil.copyFile(src, dst)
+        println(s"Copied $src")
+      }
+    }
+  }
+
+  private def getRawFileSet(parentDir: File): Set[File] = {
+    val allChildDirs: List[File] = FileUtil.getChildDirectories(parentDir)
+
+    val childDirsWithRawFiles: List[File] = allChildDirs.filter{ dir: File =>
       RegexUtil.photoDirPattern.findFirstIn(dir.getPath).nonEmpty
     }
 
-    photoDirs.foreach{ dir: File =>
-      val rawFileSet: scala.collection.mutable.Set[File] = scala.collection.mutable.Set.empty
+    val dirAndTifNames: Seq[(File, List[String])] = childDirsWithRawFiles.map{ dir: File =>
+      dir -> FileUtil.getFilesOfType(dir, List("tif")).map{ _.getName }
+    }
 
-      val tifFileNames: List[String] = FileUtil.getFilesOfType(dir, List("tif")).map{ _.getName }
-
-      tifFileNames.foreach{ name: String =>
-
-        val rawFileNumberStrings: Seq[String] = name
+    val allRawFiles: Seq[File] = dirAndTifNames.flatMap{ case (dir: File, tifNames: List[String]) =>
+      tifNames.flatMap{ tifName: String =>
+        val rawFileNumberStrings: Seq[String] = tifName
           .replace(".tif", "")
-          .split ("_")
-          .filter { RegexUtil.numericPattern.findFirstIn(_).nonEmpty }
+          .split("_")
+          .filter{ RegexUtil.numericPattern.findFirstIn(_).nonEmpty }
 
-        val firstRawFileNumber = rawFileNumberStrings.head.toInt
+        val rawFilesOption: Option[Seq[File]] = rawFileNumberStrings.headOption.map{ rawFileNumberString: String =>
+          val baseRawFileNumber: Int = rawFileNumberString.toInt
+          val rawFileNumbers: Seq[Int] = baseRawFileNumber to baseRawFileNumber + rawFileNumberStrings.length
 
-        var addedToSetCount: Int = 0
-        while (addedToSetCount < rawFileNumberStrings.length) {
-          val currentRawFileNumber: Int = firstRawFileNumber + addedToSetCount
-          val withLeadingZeroes: String = "%04d".format(currentRawFileNumber)
-          val rawFile: File = new File(s"$dir/cr2/IMG_$withLeadingZeroes.CR2")
-          if (rawFile.exists) rawFileSet += rawFile
-          addedToSetCount += 1
+          val rawFilesForCurrentTif: Seq[File] = rawFileNumbers.map{ currentRawFileNumber: Int =>
+            val withLeadingZeroes: String = "%04d".format(currentRawFileNumber)
+            new File(s"$dir/cr2/IMG_$withLeadingZeroes.CR2")
+          }
+
+          rawFilesForCurrentTif.filter{ _.exists }
         }
-      }
 
-      rawFileSet.toArray.sortBy{ _.getName }.foreach{ f: File =>
-        val src: File = new File(f.getPath)
-        val dst: File = new File(f.getPath.replace("/Volumes/photos-a", "/Users/jasonracey/Files"))
-        if (!dst.exists) {
-          FileUtil.copyFile(src, dst)
-          println(s"Copied $src")
-        }
+        rawFilesOption.getOrElse(Seq.empty)
       }
     }
+
+    allRawFiles.toSet
   }
 }
