@@ -26,18 +26,26 @@ object RawImporterApp extends App {
 
   val allChildDirs: List[File] = FileUtil.getChildDirectories(parentDir)
 
-  val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(allChildDirs)
+  val dirsThatContainRawFiles: List[File] = allChildDirs.filter{ dir: File =>
+    RegexUtil.photoDirPattern.findFirstIn(dir.getPath).nonEmpty
+  }
+
+  val dirAndTifNames: Seq[(File, List[String])] = dirsThatContainRawFiles.map{ dir: File =>
+    dir -> FileUtil.getFilesOfType(dir, List("tif")).map{ _.getName }
+  }
+
+  val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
 
   val existsInSource: Set[File] = rawFileSet.filter{ _.exists }
 
   // sorting so that overall progress can be estimated from console output
-  val sortedExists = existsInSource.toArray.sortBy{ _.getName }
+  val sortedSrcExists = existsInSource.toArray.sortBy{ _.getPath }
 
-  sortedExists.foreach{ src: File =>
+  sortedSrcExists.foreach{ src: File =>
     val dst: File = new File(src.getPath.replace("/Volumes/photos-a", "/Users/jasonracey/Files"))
     if (!dst.exists) {
       FileUtil.copyFile(src, dst)
-      println(s"Copied $src")
+      println(s"Wrote $dst")
     }
   }
 
