@@ -5,43 +5,30 @@ import java.io.File
 import scala.util.Try
 
 object RawImporterApp extends App {
-  if (args.length != 1) {
-    println("Please specify a year.")
-    System.exit(1)
+  if (args.length == 0) throw new IllegalArgumentException("Please specify a year.")
+
+  val year: Int = Try(args(0).toInt).toOption.getOrElse(throw new IllegalArgumentException("Year must be an int."))
+
+  val rawFilesParentDir: File = new File(s"/Volumes/photos-a/Photographs/$year")
+
+  if (!rawFilesParentDir.exists) throw new IllegalArgumentException(s"Directory not found: $rawFilesParentDir")
+
+  val allChildDirs: List[File] = FileUtil.getChildDirectories(rawFilesParentDir)
+
+  val dirsThatContainRawFiles: List[File] = allChildDirs.filter{ childDir: File =>
+    RegexUtil.photoDirPattern.findFirstIn(childDir.getPath).nonEmpty
   }
 
-  val yearOption: Option[Int] = Try(args(0).toInt).toOption
-
-  if (yearOption.isEmpty) {
-    println("Year must be an int.")
-    System.exit(1)
+  val rawFileDirAndTifNames: Seq[(File, List[String])] = dirsThatContainRawFiles.map{ rawFileDir: File =>
+    rawFileDir -> FileUtil.getFilesOfType(rawFileDir, List("tif")).map{ _.getName }
   }
 
-  val parentDir: File = new File(s"/Volumes/photos-a/Photographs/${yearOption.get}")
+  val rawFileSeqGenerator: RawFileSeqGenerator = if (year >= 2018) SonyRawFileSeqGenerator else CanonRawFileSeqGenerator
 
-  if (!parentDir.exists) {
-    println(s"Directory not found: $parentDir")
-    System.exit(1)
-  }
-
-  val allChildDirs: List[File] = FileUtil.getChildDirectories(parentDir)
-
-  val dirsThatContainRawFiles: List[File] = allChildDirs.filter{ dir: File =>
-    RegexUtil.photoDirPattern.findFirstIn(dir.getPath).nonEmpty
-  }
-
-  val dirAndTifNames: Seq[(File, List[String])] = dirsThatContainRawFiles.map{ dir: File =>
-    dir -> FileUtil.getFilesOfType(dir, List("tif")).map{ _.getName }
-  }
-
-  val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
-
-  val existsInSource: Set[File] = rawFileSet.filter{ _.exists }
+  val rawFileSeq: Seq[File] = rawFileSeqGenerator.getRawFileSeq(rawFileDirAndTifNames)
 
   // sorting so that overall progress can be estimated from console output
-  val sortedSrcExists = existsInSource.toArray.sortBy{ _.getPath }
-
-  sortedSrcExists.foreach{ src: File =>
+  rawFileSeq.filter{ _.exists }.sortBy{ _.getPath }.foreach{ src: File =>
     val dst: File = new File(src.getPath.replace("/Volumes/photos-a", "/Users/jasonracey/Files"))
     if (!dst.exists) {
       FileUtil.copyFile(src, dst)

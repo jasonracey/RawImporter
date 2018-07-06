@@ -53,4 +53,12 @@ final class RegexUtilTests extends FunSuite {
     val result: Option[String] = RegexUtil.numericPattern.findFirstIn(s)
     assert(result.isEmpty)
   }
+
+  test("sonyLeadingTextPattern matches expected strings") {
+    assert(RegexUtil.sonyLeadingTextPattern.replaceFirstIn("A7300001_2_3_4_5.tif", "") === "1_2_3_4_5.tif")
+    assert(RegexUtil.sonyLeadingTextPattern.replaceFirstIn("A7300010_2_3_4_5.tif", "") === "10_2_3_4_5.tif")
+    assert(RegexUtil.sonyLeadingTextPattern.replaceFirstIn("A7300100_2_3_4_5.tif", "") === "100_2_3_4_5.tif")
+    assert(RegexUtil.sonyLeadingTextPattern.replaceFirstIn("A7301000_2_3_4_5.tif", "") === "1000_2_3_4_5.tif")
+    assert(RegexUtil.sonyLeadingTextPattern.replaceFirstIn("A7310000_2_3_4_5.tif", "") === "10000_2_3_4_5.tif")
+  }
 }

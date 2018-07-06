@@ -3,7 +3,7 @@ package RawImporter
 import java.io.File
 import org.scalatest.FunSuite
 
-final class RawFileSetGeneratorTests  extends FunSuite {
+final class CanonRawFileSeqGeneratorTests  extends FunSuite {
   test("can generate empty set from empty tif names list"){
     val dirAndTifNames: Seq[(File, List[String])] = {
       val dir: File = new File("a/b")
@@ -11,10 +11,10 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 0)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 0)
   }
 
   test("can generate correct raw file objects for one tif name"){
@@ -24,12 +24,12 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 5)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 5)
 
-    val paths: Array[String] = rawFileSet.toArray.map{ _.getPath }
+    val paths: Array[String] = rawFileSeq.toArray.map{ _.getPath }
 
     assert(paths.contains("a/b/cr2/IMG_0120.CR2"))
     assert(paths.contains("a/b/cr2/IMG_0121.CR2"))
@@ -45,12 +45,12 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 10)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 10)
 
-    val paths: Array[String] = rawFileSet.toArray.map{ _.getPath }
+    val paths: Array[String] = rawFileSeq.toArray.map{ _.getPath }
 
     assert(paths.contains("a/b/cr2/IMG_0120.CR2"))
     assert(paths.contains("a/b/cr2/IMG_0121.CR2"))
@@ -71,12 +71,12 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 5)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 5)
 
-    val paths: Array[String] = rawFileSet.toArray.map{ _.getPath }
+    val paths: Array[String] = rawFileSeq.toArray.map{ _.getPath }
 
     assert(paths.contains("a/b/cr2/IMG_0120.CR2"))
     assert(paths.contains("a/b/cr2/IMG_0121.CR2"))
@@ -94,12 +94,12 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir1, tifNames1), (dir2, tifNames2))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 20)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 20)
 
-    val paths: Array[String] = rawFileSet.toArray.map{ _.getPath }
+    val paths: Array[String] = rawFileSeq.toArray.map{ _.getPath }
 
     assert(paths.contains("a/b/cr2/IMG_0446.CR2"))
     assert(paths.contains("a/b/cr2/IMG_0447.CR2"))
@@ -130,12 +130,12 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 6)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 6)
 
-    val paths: Array[String] = rawFileSet.toArray.map{ _.getPath }
+    val paths: Array[String] = rawFileSeq.toArray.map{ _.getPath }
 
     assert(paths.contains("a/b/cr2/IMG_0122.CR2"))
     assert(paths.contains("a/b/cr2/IMG_0124.CR2"))
@@ -152,9 +152,9 @@ final class RawFileSetGeneratorTests  extends FunSuite {
       Seq((dir, tifNames))
     }
 
-    val rawFileSet: Set[File] = RawFileSetGenerator.getRawFileSet(dirAndTifNames)
+    val rawFileSeq: Seq[File] = CanonRawFileSeqGenerator.getRawFileSeq(dirAndTifNames)
 
-    assert(rawFileSet != null)
-    assert(rawFileSet.size === 0)
+    assert(rawFileSeq != null)
+    assert(rawFileSeq.size === 0)
   }
 }
