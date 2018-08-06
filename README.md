@@ -1,5 +1,5 @@
 # RawImporter
-Scala app for importing raw files that were used to create HDR tifs
+Scala app for importing raw files that were used to create HDR tifs.
 
 ## Usage
 ```
